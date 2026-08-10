@@ -187,3 +187,5 @@ CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-i18n-upnp-zh-cn"
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-i18n-wifischedule-zh-cn"
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-i18n-xinetd-zh-cn"
 #CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-i18n-xlnetacc-zh-cn"
+# 追加 USB 打印机共享、UPnP 及代理插件
+CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-usb-printer p910nd luci-app-p910nd luci-app-upnp"
