@@ -91,12 +91,13 @@ jobs:
             echo "❎ 未启用 luci-app-store"
           fi
 
-      - name: Inject custom packages (Printer, UPnP, Nikki, OpenClash)
+      - name: Inject custom packages (Printer, UPnP, Nikki, OpenClash, Samba4)
         run: |
           mkdir -p shell
           touch shell/apk-custom-packages.sh
-          echo 'CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-usb-printer p910nd luci-app-p910nd luci-app-upnp luci-app-nikki luci-app-openclash"' >> shell/apk-custom-packages.sh
-          echo "✅ 已追加 USB打印机驱动、p910nd、UPnP 及 Nikki/OpenClash 代理插件"
+          # 追加 USB 存储挂载驱动、NTFS/FAT/exFAT 文件系统支持以及 SAMBA4 网络共享插件
+          echo 'CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-usb-printer p910nd luci-app-p910nd luci-app-upnp luci-app-nikki luci-app-openclash kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat kmod-fs-ntfs3 kmod-fs-exfat ntfs-3g block-mount luci-app-samba4 luci-i18n-samba4-zh-cn"' >> shell/apk-custom-packages.sh
+          echo "✅ 已追加 USB打印机、代理插件及 SAMBA4 USB网络共享支持"
 
       - name: Build ImmortalWrt-x86-64-efi 25.12.x
         run: |
