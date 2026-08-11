@@ -101,24 +101,22 @@ jobs:
       - name: Inject custom packages (Printer, UPnP, Nikki, OpenClash, Samba4)
         run: |
           touch shell/apk-custom-packages.sh
-          # 追加 USB 存储挂载驱动、NTFS/FAT/exFAT 文件系统支持以及 SAMBA4 网络共享插件
           echo 'CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-usb-printer p910nd luci-app-p910nd luci-app-upnp luci-app-nikki luci-app-openclash kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat kmod-fs-ntfs3 kmod-fs-exfat ntfs-3g block-mount luci-app-samba4 luci-i18n-samba4-zh-cn"' >> shell/apk-custom-packages.sh
           echo "✅ 已追加 USB打印机、代理插件及 SAMBA4 USB网络共享支持"
 
       - name: Disable Untrusted Third-party Repository
         run: |
           mkdir -p files/etc/uci-defaults
-          cat << 'EOF' > files/etc/uci-defaults/99-disable-untrusted-repo
-#!/bin/sh
-if [ -f /etc/apk/repositories.conf ]; then
-    sed -i '/down\.dllkids\.xyz/s/^/#/' /etc/apk/repositories.conf
-fi
-if [ -f /etc/apk/repositories ]; then
-    sed -i '/down\.dllkids\.xyz/s/^/#/' /etc/apk/repositories
-fi
-exit 0
-EOF
-          chmod +x files/etc/uci-defaults/99-disable-untrusted-repo
+          SCRIPT_PATH="files/etc/uci-defaults/99-disable-untrusted-repo"
+          echo '#!/bin/sh' > "$SCRIPT_PATH"
+          echo 'if [ -f /etc/apk/repositories.conf ]; then' >> "$SCRIPT_PATH"
+          echo '    sed -i '\''/down\.dllkids\.xyz/s/^/#/'\'' /etc/apk/repositories.conf' >> "$SCRIPT_PATH"
+          echo 'fi' >> "$SCRIPT_PATH"
+          echo 'if [ -f /etc/apk/repositories ]; then' >> "$SCRIPT_PATH"
+          echo '    sed -i '\''/down\.dllkids\.xyz/s/^/#/'\'' /etc/apk/repositories' >> "$SCRIPT_PATH"
+          echo 'fi' >> "$SCRIPT_PATH"
+          echo 'exit 0' >> "$SCRIPT_PATH"
+          chmod +x "$SCRIPT_PATH"
           echo "✅ 已自动添加禁用未签名第三方源脚本"
 
       - name: Build ImmortalWrt-x86-64-efi 25.12.x
@@ -159,21 +157,20 @@ EOF
 
       - name: Create info
         run: |
-          cat > ${{ github.workspace }}/router-info.md <<EOF
-## 📡 路由器后台信息
-<a href="https://wkdaily.cpolar.cn/archives/1">
-  <img src="https://img.shields.io/badge/若下载慢可套用国内加速站下载-FC7C0D?logo=github&logoColor=fff&labelColor=000&style=for-the-badge"/>
-</a>
-
-- 🏠 **后台地址**: ${{ github.event.inputs.custom_router_ip }}
-- 👤 **用户名**: root
-- 🔑 **密码**: 无
-EOF
+          INFO_FILE="${{ github.workspace }}/router-info.md"
+          echo "## 📡 路由器后台信息" > "$INFO_FILE"
+          echo '<a href="https://wkdaily.cpolar.cn/archives/1">' >> "$INFO_FILE"
+          echo '  <img src="https://img.shields.io/badge/若下载慢可套用国内加速站下载-FC7C0D?logo=github&logoColor=fff&labelColor=000&style=for-the-badge"/>' >> "$INFO_FILE"
+          echo '</a>' >> "$INFO_FILE"
+          echo '' >> "$INFO_FILE"
+          echo "- 🏠 **后台地址**: ${{ github.event.inputs.custom_router_ip }}" >> "$INFO_FILE"
+          echo "- 👤 **用户名**: root" >> "$INFO_FILE"
+          echo "- 🔑 **密码**: 无" >> "$INFO_FILE"
 
           if [ "${{ github.event.inputs.include_docker }}" == "yes" ]; then
-            printf "\n#### 默认带docker\n" >> ${{ github.workspace }}/router-info.md
+            echo -e "\n#### 默认带docker" >> "$INFO_FILE"
           else
-            printf "\n#### 不带docker\n" >> ${{ github.workspace }}/router-info.md
+            echo -e "\n#### 不带docker" >> "$INFO_FILE"
           fi
 
       - name: Upload ImmortWrt as release assets
