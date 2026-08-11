@@ -67,9 +67,15 @@ jobs:
       - name: Set executable permissions
         run: chmod +x ${{ github.workspace }}/x86-64/build25.sh
 
-      - name: Save Custom Router IP into OpenWrt files
+      - name: Prepare workspace directories
         run: |
           mkdir -p "${{ github.workspace }}/custom"
+          mkdir -p "${{ github.workspace }}/shell"
+          mkdir -p "${{ github.workspace }}/bin"
+          mkdir -p "${{ github.workspace }}/files"
+
+      - name: Save Custom Router IP into OpenWrt files
+        run: |
           echo "${{ github.event.inputs.custom_router_ip }}" > "${{ github.workspace }}/custom/custom_router_ip.txt"
           echo "您设置的路由器管理地址是:${{ github.event.inputs.custom_router_ip }}"
 
@@ -84,6 +90,7 @@ jobs:
 
       - name: Enable Store integration
         run: |
+          touch shell/apk-custom-packages.sh
           if [ "${{ github.event.inputs.enable_store }}" == "true" ]; then
             echo 'CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-store"' >> shell/apk-custom-packages.sh
             echo "✅ 已追加 luci-app-store"
@@ -93,7 +100,6 @@ jobs:
 
       - name: Inject custom packages (Printer, UPnP, Nikki, OpenClash, Samba4)
         run: |
-          mkdir -p shell
           touch shell/apk-custom-packages.sh
           # 追加 USB 存储挂载驱动、NTFS/FAT/exFAT 文件系统支持以及 SAMBA4 网络共享插件
           echo 'CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-usb-printer p910nd luci-app-p910nd luci-app-upnp luci-app-nikki luci-app-openclash kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat kmod-fs-ntfs3 kmod-fs-exfat ntfs-3g block-mount luci-app-samba4 luci-i18n-samba4-zh-cn"' >> shell/apk-custom-packages.sh
@@ -165,9 +171,9 @@ EOF
 EOF
 
           if [ "${{ github.event.inputs.include_docker }}" == "yes" ]; then
-            echo -e "\n#### 默认带docker" >> ${{ github.workspace }}/router-info.md
+            printf "\n#### 默认带docker\n" >> ${{ github.workspace }}/router-info.md
           else
-            echo -e "\n#### 不带docker" >> ${{ github.workspace }}/router-info.md
+            printf "\n#### 不带docker\n" >> ${{ github.workspace }}/router-info.md
           fi
 
       - name: Upload ImmortWrt as release assets
