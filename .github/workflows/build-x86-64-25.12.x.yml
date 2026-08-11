@@ -26,14 +26,14 @@ on:
           - '4G'
       enable_store:
         description: "集成 store 商店"
-        required: false
+        required: true
         type: boolean
         default: false
       include_docker:
         description: |
           是否编译 Docker 插件
-        required: true
-        default: 'yes'
+        required: false
+        default: 'no'
         type: choice
         options:
           - 'yes'
