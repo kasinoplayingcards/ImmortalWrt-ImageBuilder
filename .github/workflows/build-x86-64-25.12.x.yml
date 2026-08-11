@@ -99,6 +99,14 @@ jobs:
           echo 'CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-usb-printer p910nd luci-app-p910nd luci-app-upnp luci-app-nikki luci-app-openclash kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat kmod-fs-ntfs3 kmod-fs-exfat ntfs-3g block-mount luci-app-samba4 luci-i18n-samba4-zh-cn"' >> shell/apk-custom-packages.sh
           echo "✅ 已追加 USB打印机、代理插件及 SAMBA4 USB网络共享支持"
 
+      # === 在这里追加下面这个步骤 ===
+      - name: Fix APK Allow Untrusted Repositories
+        run: |
+          mkdir -p custom/etc/apk
+          # 允许 apk 信任第三方未签名软件源，防止 update 报错退出
+          echo "allow-untrusted = yes" >> custom/etc/apk/repositories.conf
+          echo "✅ 已配置全局允许未签名软件源"
+
       - name: Build ImmortalWrt-x86-64-efi 25.12.x
         run: |
           profile="${{ github.event.inputs.profile }}"
