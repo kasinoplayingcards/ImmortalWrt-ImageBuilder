@@ -72,8 +72,23 @@ jobs:
           mkdir -p "${{ github.workspace }}/custom"
           echo "${{ github.event.inputs.custom_router_ip }}" > "${{ github.workspace }}/custom/custom_router_ip.txt"
           echo "您设置的路由器管理地址是:${{ github.event.inputs.custom_router_ip }}"
-          # 后续步骤会将该文件映射到路由器/etc/config/custom_router_ip.txt 以便用于开机脚本99-custom.sh读取用户设置的ip
-      
+          # 👇 【新增：强行写入首次开机自动修改 IP 的初始化脚本】 👇
+      - name: Set Custom Router IP via uci-defaults
+        run: |
+          mkdir -p files/etc/uci-defaults
+          SCRIPT_PATH="files/etc/uci-defaults/99-custom-ip"
+          echo '#!/bin/sh' > "$SCRIPT_PATH"
+          echo 'TARGET_IP="${1:-${2:-192.168.100.1}}"' >> "$SCRIPT_PATH"
+          echo 'if [ -f /etc/config/custom_router_ip.txt ]; then' >> "$SCRIPT_PATH"
+          echo '    TARGET_IP=$(cat /etc/config/custom_router_ip.txt | tr -d "\r\n")' >> "$SCRIPT_PATH"
+          echo 'fi' >> "$SCRIPT_PATH"
+          echo 'if [ -n "$TARGET_IP" ]; then' >> "$SCRIPT_PATH"
+          echo '    uci set network.lan.ipaddr="$TARGET_IP"' >> "$SCRIPT_PATH"
+          echo '    uci commit network' >> "$SCRIPT_PATH"
+          echo 'fi' >> "$SCRIPT_PATH"
+          echo 'exit 0' >> "$SCRIPT_PATH"
+          chmod +x "$SCRIPT_PATH"
+          echo "✅ 已成功添加首次开机自动应用自定义 IP 脚本"
       - name: Validate PPPoE Inputs
         run: |
           if [[ "${{ inputs.enable_pppoe }}" == "yes" ]]; then
