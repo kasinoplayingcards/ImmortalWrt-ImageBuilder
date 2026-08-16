@@ -85,7 +85,7 @@ jobs:
           mkdir -p files/etc/uci-defaults
           SCRIPT_PATH="files/etc/uci-defaults/99-custom-ip"
           echo '#!/bin/sh' > "$SCRIPT_PATH"
-          echo 'TARGET_IP="${1:-${2:-192.168.100.1}}"' >> "$SCRIPT_PATH"
+          echo 'TARGET_IP="${1:-${2:-192.168.11.1}}"' >> "$SCRIPT_PATH"
           echo 'if [ -f /etc/config/custom_router_ip.txt ]; then' >> "$SCRIPT_PATH"
           echo '    TARGET_IP=$(cat /etc/config/custom_router_ip.txt | tr -d "\r\n")' >> "$SCRIPT_PATH"
           echo 'fi' >> "$SCRIPT_PATH"
