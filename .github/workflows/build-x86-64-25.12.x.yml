@@ -98,11 +98,11 @@ jobs:
             echo "❎ 未启用 luci-app-store"
           fi
 
-      - name: Inject custom packages (Printer, UPnP, Nikki, OpenClash, Samba4)
+      - name: Inject custom packages (Printer, UPnP, Nikki, OpenClash, Samba4, AdGuard Home)
         run: |
           touch shell/apk-custom-packages.sh
-          echo 'CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-usb-printer p910nd luci-app-p910nd luci-app-upnp luci-app-nikki luci-app-openclash kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat kmod-fs-ntfs3 kmod-fs-exfat ntfs-3g block-mount luci-app-samba4 luci-i18n-samba4-zh-cn"' >> shell/apk-custom-packages.sh
-          echo "✅ 已追加 USB打印机、代理插件及 SAMBA4 USB网络共享支持"
+          echo 'CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-usb-printer p910nd luci-app-p910nd luci-app-upnp luci-app-nikki luci-app-openclash kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat kmod-fs-ntfs3 kmod-fs-exfat ntfs-3g block-mount luci-app-samba4 luci-i18n-samba4-zh-cn luci-app-adguardhome AdGuardHome"' >> shell/apk-custom-packages.sh
+          echo "✅ 已追加 AdGuard Home 及其他自定义插件"
 
       - name: Disable Untrusted Third-party Repository
         run: |
