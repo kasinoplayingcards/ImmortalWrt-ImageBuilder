@@ -119,6 +119,17 @@ jobs:
           chmod +x "$SCRIPT_PATH"
           echo "✅ 已自动添加禁用未签名第三方源脚本"
 
+      - name: Preset AdGuard Home DNS Port (Avoid 53 port collision)
+        run: |
+          mkdir -p files/etc/uci-defaults
+          SCRIPT_PATH="files/etc/uci-defaults/99-custom-adguard"
+          echo '#!/bin/sh' > "$SCRIPT_PATH"
+          echo 'uci set dhcp.@dnsmasq[0].port='\''5353'\''' >> "$SCRIPT_PATH"
+          echo 'uci commit dhcp' >> "$SCRIPT_PATH"
+          echo 'exit 0' >> "$SCRIPT_PATH"
+          chmod +x "$SCRIPT_PATH"
+          echo "✅ 已自动添加 Dnsmasq 避让 5353 端口脚本"
+      
       - name: Build ImmortalWrt-x86-64-efi 25.12.x
         run: |
           profile="${{ github.event.inputs.profile }}"
