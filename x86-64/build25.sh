@@ -9,7 +9,7 @@ echo "编译固件大小为: $PROFILE MB"
 echo "Include Docker: $INCLUDE_DOCKER"
 
 echo "Create pppoe-settings"
-mkdir -p  /home/build/immortalwrt/files/etc/config
+mkdir -p /home/build/immortalwrt/files/etc/config
 
 # 创建pppoe配置文件 yml传入环境变量ENABLE_PPPOE等 写入配置文件 供99-custom.sh读取
 cat << EOF > /home/build/immortalwrt/files/etc/config/pppoe-settings
@@ -21,6 +21,9 @@ EOF
 echo "cat pppoe-settings"
 cat /home/build/immortalwrt/files/etc/config/pppoe-settings
 
+# 创建/确保 packages 目录存在
+mkdir -p /home/build/immortalwrt/packages
+
 if [ -z "$CUSTOM_PACKAGES" ]; then
   echo "⚪️ 未选择 任何第三方软件包"
 else
@@ -31,20 +34,21 @@ else
 
   # 拷贝 run/x86 下所有 run 文件和apk文件 到 extra-packages 目录
   mkdir -p /home/build/immortalwrt/extra-packages
-  cp -r /tmp/store-apk-repo/run/x86/* /home/build/immortalwrt/extra-packages/
+  cp -r /tmp/store-apk-repo/run/x86/* /home/build/immortalwrt/extra-packages/ 2>/dev/null || true
 
   echo "✅ Run files copied to extra-packages:"
-  # 解压并拷贝apk到packages目录
-  sh shell/apk-prepare-packages.sh
+  # 解压并拷贝apk到packages目录 (注意：请确保 prepare 脚本中使用 cp 而非 rm -rf packages)
+  if [ -f "shell/apk-prepare-packages.sh" ]; then
+    sh shell/apk-prepare-packages.sh
+  fi
+  echo "📦 当前离线 packages 目录文件列表："
   ls -lah /home/build/immortalwrt/packages/
 fi
-
 
 # 输出调试信息
 echo "$(date '+%Y-%m-%d %H:%M:%S') - 开始构建固件..."
 
 # ============= imm仓库内的插件==============
-# 定义所需安装的包列表 下列插件你都可以自行删减
 PACKAGES=""
 PACKAGES="$PACKAGES curl"
 PACKAGES="$PACKAGES luci-i18n-diskman-zh-cn"
@@ -60,9 +64,8 @@ PACKAGES="$PACKAGES openssh-sftp-server"
 # 文件管理器
 PACKAGES="$PACKAGES luci-i18n-filemanager-zh-cn"
 # ======== shell/apk-custom-packages.sh =======
-# 合并imm仓库以外的第三方插件 暂时注释
+# 合并imm仓库以外的第三方插件
 PACKAGES="$PACKAGES $CUSTOM_PACKAGES"
-
 
 # 判断是否需要编译 Docker 插件
 if [ "$INCLUDE_DOCKER" = "yes" ]; then
@@ -87,7 +90,9 @@ if echo "$PACKAGES" | grep -q "luci-app-openclash"; then
       | head -n1 \
       | cut -d '"' -f 4)
     echo "OpenClash latest apk: $URL"
-    wget "$URL" -P /home/build/immortalwrt/packages/
+    if [ -n "$URL" ]; then
+      wget "$URL" -P /home/build/immortalwrt/packages/
+    fi
 else
     echo "⚪️ 未选择 luci-app-openclash"
 fi
@@ -97,7 +102,6 @@ if echo "$PACKAGES" | grep -q "luci-app-ssr-plus"; then
     mkdir -p files/usr/bin
     # Download mihomo
     MIHOMO_URL="https://github.com/MetaCubeX/mihomo/releases/download/v1.19.24/mihomo-linux-amd64-compatible-v1.19.24.gz"
-    mkdir -p files/usr/bin
     wget -qO- "$MIHOMO_URL" | gzip -dc > files/usr/bin/mihomo
     chmod +x files/usr/bin/mihomo
     echo "✅ 已下载 mihomo core"
@@ -110,7 +114,12 @@ fi
 echo "$(date '+%Y-%m-%d %H:%M:%S') - Building image with the following packages:"
 echo "$PACKAGES"
 
-make image PROFILE="generic" PACKAGES="$PACKAGES" FILES="/home/build/immortalwrt/files" ROOTFS_PARTSIZE=$PROFILE
+# 引入 PACKAGES 以及挂载 local packages 离线安装源
+make image PROFILE="generic" \
+           PACKAGES="$PACKAGES" \
+           FILES="/home/build/immortalwrt/files" \
+           REPOSITORY_APK="/home/build/immortalwrt/packages" \
+           ROOTFS_PARTSIZE=$PROFILE
 
 if [ $? -ne 0 ]; then
     echo "$(date '+%Y-%m-%d %H:%M:%S') - Error: Build failed!"
