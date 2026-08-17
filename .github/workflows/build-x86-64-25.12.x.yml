@@ -79,7 +79,6 @@ jobs:
           echo "${{ github.event.inputs.custom_router_ip }}" > "${{ github.workspace }}/custom/custom_router_ip.txt"
           echo "您设置的路由器管理地址是:${{ github.event.inputs.custom_router_ip }}"
 
-      # 👇 【新增：强行写入首次开机自动修改 IP 的初始化脚本】 👇
       - name: Set Custom Router IP via uci-defaults
         run: |
           mkdir -p files/etc/uci-defaults
@@ -96,6 +95,27 @@ jobs:
           echo 'exit 0' >> "$SCRIPT_PATH"
           chmod +x "$SCRIPT_PATH"
           echo "✅ 已成功添加首次开机自动应用自定义 IP 脚本"
+
+      - name: Auto Mount USB Drives & Enable Samba Share
+        run: |
+          mkdir -p files/etc/uci-defaults
+          SCRIPT_PATH="files/etc/uci-defaults/99-auto-usb-samba"
+          echo '#!/bin/sh' > "$SCRIPT_PATH"
+          echo 'uci set blockd.global.automount="1"' >> "$SCRIPT_PATH"
+          echo 'uci set blockd.global.autosamba="1"' >> "$SCRIPT_PATH"
+          echo 'uci commit blockd' >> "$SCRIPT_PATH"
+          echo 'uci add samba4 share' >> "$SCRIPT_PATH"
+          echo 'uci set samba4.@share[-1].name="USB-Share"' >> "$SCRIPT_PATH"
+          echo 'uci set samba4.@share[-1].path="/mnt"' >> "$SCRIPT_PATH"
+          echo 'uci set samba4.@share[-1].read_only="0"' >> "$SCRIPT_PATH"
+          echo 'uci set samba4.@share[-1].guest_ok="yes"' >> "$SCRIPT_PATH"
+          echo 'uci set samba4.@share[-1].create_mask="0777"' >> "$SCRIPT_PATH"
+          echo 'uci set samba4.@share[-1].dir_mask="0777"' >> "$SCRIPT_PATH"
+          echo 'uci commit samba4' >> "$SCRIPT_PATH"
+          echo 'exit 0' >> "$SCRIPT_PATH"
+          chmod +x "$SCRIPT_PATH"
+          echo "✅ 已成功添加 U 盘自动挂载与 Samba4 共享脚本"
+
       - name: Validate PPPoE Inputs
         run: |
           if [[ "${{ github.event.inputs.enable_pppoe }}" == "yes" ]]; then
@@ -115,11 +135,11 @@ jobs:
             echo "❎ 未启用 luci-app-store"
           fi
 
-      - name: Inject custom packages (Printer, UPnP, Nikki, OpenClash, Samba4)
+      - name: Inject custom packages (Printer, UPnP, Proxy, USB Drive & Samba4)
         run: |
           touch shell/apk-custom-packages.sh
-          echo 'CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-usb-printer p910nd luci-app-p910nd luci-app-upnp luci-app-nikki luci-app-openclash kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat kmod-fs-ntfs3 kmod-fs-exfat ntfs-3g block-mount luci-app-samba4 luci-i18n-samba4-zh-cn"' >> shell/apk-custom-packages.sh
-          echo "✅ 已追加自定义插件（已移除 AdGuard Home）"
+          echo 'CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-usb-printer p910nd luci-app-p910nd luci-app-upnp luci-app-nikki luci-app-openclash kmod-usb-core kmod-usb2 kmod-usb3 kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat kmod-fs-ntfs3 kmod-fs-exfat ntfs-3g block-mount luci-app-samba4 luci-i18n-samba4-zh-cn"' >> shell/apk-custom-packages.sh
+          echo "✅ 已追加打印机、UPnP、代理、USB驱动、文件系统及 Samba4 组件"
 
       - name: Disable Untrusted Third-party Repository
         run: |
@@ -135,7 +155,7 @@ jobs:
           echo 'exit 0' >> "$SCRIPT_PATH"
           chmod +x "$SCRIPT_PATH"
           echo "✅ 已自动添加禁用未签名第三方源脚本"
-       
+
       - name: Build ImmortalWrt-x86-64-efi 25.12.x
         run: |
           profile="${{ github.event.inputs.profile }}"
