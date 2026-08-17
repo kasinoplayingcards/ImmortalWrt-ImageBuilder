@@ -125,9 +125,13 @@ jobs:
             fi
           fi
 
+      - name: Initialize Custom Packages Script
+        run: |
+          echo '#!/bin/sh' > shell/apk-custom-packages.sh
+          echo 'CUSTOM_PACKAGES=""' >> shell/apk-custom-packages.sh
+
       - name: Enable Store integration
         run: |
-          touch shell/apk-custom-packages.sh
           if [ "${{ github.event.inputs.enable_store }}" == "true" ]; then
             echo 'CUSTOM_PACKAGES="$CUSTOM_PACKAGES luci-app-store"' >> shell/apk-custom-packages.sh
             echo "✅ 已追加 luci-app-store"
@@ -137,7 +141,6 @@ jobs:
 
       - name: Inject custom packages (Printer, UPnP, Proxy, USB Drive & Samba4)
         run: |
-          touch shell/apk-custom-packages.sh
           echo 'CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-usb-printer p910nd luci-app-p910nd luci-app-upnp luci-app-nikki luci-app-openclash kmod-usb-core kmod-usb2 kmod-usb3 kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat kmod-fs-ntfs3 kmod-fs-exfat ntfs-3g block-mount luci-app-samba4 luci-i18n-samba4-zh-cn"' >> shell/apk-custom-packages.sh
           echo "✅ 已追加打印机、UPnP、代理、USB驱动、文件系统及 Samba4 组件"
 
