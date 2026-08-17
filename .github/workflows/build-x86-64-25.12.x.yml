@@ -104,13 +104,14 @@ jobs:
           echo 'uci set blockd.global.automount="1"' >> "$SCRIPT_PATH"
           echo 'uci set blockd.global.autosamba="1"' >> "$SCRIPT_PATH"
           echo 'uci commit blockd' >> "$SCRIPT_PATH"
-          echo 'uci add samba4 share' >> "$SCRIPT_PATH"
-          echo 'uci set samba4.@share[-1].name="USB-Share"' >> "$SCRIPT_PATH"
-          echo 'uci set samba4.@share[-1].path="/mnt"' >> "$SCRIPT_PATH"
-          echo 'uci set samba4.@share[-1].read_only="0"' >> "$SCRIPT_PATH"
-          echo 'uci set samba4.@share[-1].guest_ok="yes"' >> "$SCRIPT_PATH"
-          echo 'uci set samba4.@share[-1].create_mask="0777"' >> "$SCRIPT_PATH"
-          echo 'uci set samba4.@share[-1].dir_mask="0777"' >> "$SCRIPT_PATH"
+          echo 'uci -q delete samba4.usb_share' >> "$SCRIPT_PATH"
+          echo 'uci set samba4.usb_share=share' >> "$SCRIPT_PATH"
+          echo 'uci set samba4.usb_share.name="USB-Share"' >> "$SCRIPT_PATH"
+          echo 'uci set samba4.usb_share.path="/mnt"' >> "$SCRIPT_PATH"
+          echo 'uci set samba4.usb_share.read_only="0"' >> "$SCRIPT_PATH"
+          echo 'uci set samba4.usb_share.guest_ok="yes"' >> "$SCRIPT_PATH"
+          echo 'uci set samba4.usb_share.create_mask="0777"' >> "$SCRIPT_PATH"
+          echo 'uci set samba4.usb_share.dir_mask="0777"' >> "$SCRIPT_PATH"
           echo 'uci commit samba4' >> "$SCRIPT_PATH"
           echo 'exit 0' >> "$SCRIPT_PATH"
           chmod +x "$SCRIPT_PATH"
@@ -129,6 +130,7 @@ jobs:
         run: |
           echo '#!/bin/sh' > shell/apk-custom-packages.sh
           echo 'CUSTOM_PACKAGES=""' >> shell/apk-custom-packages.sh
+          chmod +x shell/apk-custom-packages.sh
 
       - name: Enable Store integration
         run: |
