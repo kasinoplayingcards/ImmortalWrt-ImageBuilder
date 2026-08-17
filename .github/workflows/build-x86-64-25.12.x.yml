@@ -143,7 +143,7 @@ jobs:
 
       - name: Inject custom packages (Printer, UPnP, Proxy, USB Drive & Samba4)
         run: |
-          echo 'CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-usb-printer p910nd luci-app-p910nd luci-app-upnp kmod-usb-core kmod-usb2 kmod-usb3 kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat kmod-fs-ntfs3 kmod-fs-exfat ntfs-3g block-mount luci-app-samba4 luci-i18n-samba4-zh-cn bash curl ca-certificates ip-full kmod-tun luci-app-openclash luci-app-nikki dae luci-app-daed"' >> shell/apk-custom-packages.sh
+          echo 'CUSTOM_PACKAGES="$CUSTOM_PACKAGES kmod-usb-printer p910nd luci-app-p910nd luci-app-upnp kmod-usb-core kmod-usb2 kmod-usb3 kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat kmod-fs-ntfs3 kmod-fs-exfat ntfs-3g block-mount luci-app-samba4 luci-i18n-samba4-zh-cn bash curl ca-certificates ip-full kmod-tun luci-app-openclash luci-app-nikki luci-app-daed"' >> shell/apk-custom-packages.sh
           echo "✅ 已追加打印机、UPnP、代理(OpenClash/DAED)、USB驱动及 Samba4 组件"
 
       - name: Disable Untrusted Third-party Repository
